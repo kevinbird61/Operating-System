@@ -20,29 +20,17 @@ int strcicmp(char const *str1,char const *str2){
 	}
 	return 0;
 }
-
+// For Create File
 int Create(char *str){
-	//char *fname,ftype[4];
-	//memset(fname,'0',sizeof(ftype));
-	//memset(ftype,'0',sizeof(ftype));
-	//strcpy(ftype,".txt");
 	strcat(str,".txt");
 	FILE *fp = fopen(str,"w");
-	fprintf(fp,"Hello\n");
+	fprintf(fp,"\0");
 	fclose(fp);
-	/*
-	if(fname = (char*)malloc(strlen(str)+strlen(ftype)+1)!=NULL){
-		strcat(fname,str);
-		strcat(fname,ftype);
-		FILE *fp = fopen(fname,"w");
-		fclose(fp);
-		return 1;
-	}
-	else{
-		printf("Create File Failed!\n");
-		return 0;
-	}
-	*/
+}
+
+// For Editor File
+int Edit(){
+
 }
 
 int socket_server(int port)
@@ -83,13 +71,21 @@ printf("成功開啟Server 等待client端的連線\n");
 			printf("\n Error : Read Failed \n");
 			return 1;
 	   	} 
-	    	if(flags == 1){
-			printf("Get the filename: %s\n", buffer);
-			Create(buffer);
-			flags = 0;
-		}
-		else{
-	    		printf("The client says : [%s]\n", buffer);
+		
+		switch(){
+			case 0:
+				printf("The client says : [%s]\n", buffer);
+				break;
+			case 1:
+				printf("Get the filename: %s\n", buffer);
+				Create(buffer);
+				flags = 0;
+				break;
+			case 2:
+				printf("Get the filename: %s\n", buffer);
+				Edit(buffer);
+				flags = 0;
+				break;
 		}
 		//write(connfd, buffer, strlen(buffer));
 		// Judge which instruction should operate
@@ -97,21 +93,22 @@ printf("成功開啟Server 等待client端的連線\n");
 			write(connfd, buffer, strlen(buffer));		
 			break;
 		}
-		
 		if(!strcicmp(buffer,"C")){
-			// Tell client to Input the filename
 			char file[30];
 			memset(file, '\0', sizeof(file)); 
 			strcpy(file,"Please Input the filename\n");
 			write(connfd, file, strlen(file));
 			memset(file, '\0', sizeof(file));
 			flags = 1;
-			// Get the filename and Open the file(Empty)
-			//printf("Get the filename: %s\n", file);
-			// And store the file , file = filename
-			//Create(file);
 		}
-		
+		if(!strcicmp(buffer,"E")){
+			char file[30];
+			memset(file, '\0', sizeof(file)); 
+			strcpy(file,"Please Input the filename you want to edit\n");
+			write(connfd, file, strlen(file));
+			memset(file, '\0', sizeof(file));
+			flags = 2;
+		}
 		// =====================End=====================
 	}
     close(connfd);
