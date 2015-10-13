@@ -8,9 +8,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h> 
+#include <ctype.h>
 
 int strcicmp(char const *str1,char const *str2){
-	int length = strlen(str1),count=0;
+	int length = strlen(str1),check = strlen(str2),count=0;
 	for(;count!=length;str1++,str2++){
 		int d = tolower(*str1) - tolower(*str2);
 		if(d!=0 || !*str1){
@@ -18,6 +19,7 @@ int strcicmp(char const *str1,char const *str2){
 		}
 	count++;
 	}
+	if(count!=check){return 1;}
 	return 0;
 }
 
@@ -34,7 +36,6 @@ int socket_client(char *ip, int port)
         printf("\n Error : Could not create socket\n");
         return 1;
     } 
-
     memset(&serv_addr, '0', sizeof(serv_addr)); // Same , initialize the buffer
 
     serv_addr.sin_family = AF_INET; 
@@ -45,14 +46,13 @@ int socket_client(char *ip, int port)
         printf("\n inet_pton error occured\n");
         return 1;
     } 
-
     if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
        printf("\n Error : Connect Failed \n");
        return 1;
     } 
 //========================connection complete=====================================//
- char msg[50];
+ char msg[1024];
 	while(1){
 	    if (read(sockfd, buffer, sizeof(buffer)) < 0)
 	    {
@@ -63,14 +63,50 @@ int socket_client(char *ip, int port)
 	    if(!strcicmp(buffer,"End")){
 		exit(1);
 	    }
+	    else if(!strcicmp(buffer,"Please input the content you want to edit in this file")){
+			printf("From Server say :\n%s\n", buffer);
+			sleep(1);
+			read(sockfd, msg, sizeof(msg));
+			while(strcicmp(msg,"OK!Stop~")){ // while not send the specify word
+				memset(msg, '\0', sizeof(msg));
+				scanf("%s",msg);
+				if (write(sockfd, msg, strlen(msg)) < 0) //準備寫回server端
+				{
+					printf("\n Error : Write Failed \n");
+					return 1;
+				}
+				memset(msg, '\0', sizeof(msg));
+				read(sockfd,msg, sizeof(msg));
+			}
+			memset(msg, '\0', sizeof(msg));
+			strcpy(msg,"StopIn");
+			write(sockfd, msg, strlen(msg));
+	    }
+	    else if(!strcicmp(buffer,"Show")){
+	    	printf("The File List:\n");
+	    	while(1){
+	    		char bk[128];
+	    		read(sockfd, bk, sizeof(bk));
+	    		if(!strcicmp(bk,"OK!STOPLS")){break;}
+	    		printf("%s\n",bk);
+	    		write(sockfd,"Y",1);
+	    	}
+	    	printf("End of List\n\n");
+	    }
+	    else if(!strcicmp(buffer,"DownLoad")){
+	    	char dFile[128];
+	    	memset(dFile,'\0',sizeof(dFile));
+	    	printf("Which file in \"Server端\" you want to download?\n");
+	    	scanf("%s",dFile);
+	    	write(sockfd,dFile,sizeof(dFile));
+	    	printf("End of DownLoad Input\n\n");
+	    }
 	    else{
 		printf("From Server port's message :\n%s\n", buffer);
-	    }
 	    sleep(1);
 	    //====================Data ready to deliver======================//
 	    //strcpy(buffer, "I get client message!")
 		memset(msg, '\0', sizeof(msg));
-		//scanf("%[^\n]",msg);
 		scanf("%s",msg);
 		memset(buffer, '\0', sizeof(buffer));
 		strcpy(buffer,msg);
@@ -78,6 +114,7 @@ int socket_client(char *ip, int port)
 	    {
 		printf("\n Error : Write Failed \n");
 		return 1;
+	    }
 	    }
 	}
 //===========================End socket===========================================//
