@@ -71,19 +71,25 @@ void imple_LS(int connfd)
 // For Doing "downLoad"
 void downLoad(char dFile[],char dpath[])
 {
-    char cp[128];
-    char sp[128];
+    char cp[1034];
+    char sp[1024];
     memset(cp,'\0',sizeof(cp));
     memset(sp,'\0',sizeof(sp));
     char cwd[1024];
     memset(cwd,'\0',sizeof(cwd));
-    if (getcwd(cwd, sizeof(cwd)) != NULL)
+    if (getcwd(cwd, sizeof(cwd)) != NULL){
     	strcpy(sp,cwd);
+    	//printf("Origin:%s \nserverPath: %s\n",cwd,sp);
+    }
+    printf("CP: %s\n",cp);
+    printf("DFILE: %s\n",dFile);
     strcpy(cp,dpath);
-
+	printf("After copy : %s\n",cp);
+	
     char *clientPath = (char*)malloc(sizeof(cp)+sizeof(dFile));
     char *serverPath = (char*)malloc(sizeof(sp)+sizeof(dFile));
-
+	memset(clientPath,'\0',sizeof(clientPath));
+	memset(serverPath,'\0',sizeof(serverPath));
     strcat(clientPath,cp);
     strcat(clientPath,"/");
     strcat(clientPath,dFile);
@@ -145,7 +151,7 @@ int socket_server(int port)
             }
         }
         memset(buffer, '\0', sizeof(buffer));
-
+		
         if (read(connfd, buffer, sizeof(buffer)) < 0) {
             printf("\n Error : Read Failed \n");
             return 1;
@@ -177,23 +183,28 @@ int socket_server(int port)
                 } else {
                     char str[128];
                     memset(str, '\0', sizeof(str));
-                    strcpy(str,"Please input the content you want to edit in this file\n");
+                    strcpy(str,"Please input the content you want to edit in this file");
                     write(connfd, str, strlen(str));
+                    memset(str, '\0', sizeof(str));
+                    read(connfd, str, strlen(str));
                     while(strcicmp(str,"StopIn")) { // while not send the specify word
-                    	memset(str, '\0', sizeof(str));
-				        read(connfd,str, sizeof(str));	
+                    	//memset(str, '\0', sizeof(str));
+				        //read(connfd,str, sizeof(str));	
+				       	write(connfd, str, sizeof(str));
 				       	if(strcicmp(str,"\0")){
 				        	printf("Client server input: %s\n",str);
+				        	if(strcicmp(str,"StopIn")){
 				        	fprintf(fp,"%s\n",str);
+				        	}
 				        }
-		            	else{
-		            		write(connfd, str, sizeof(str));
-		            	}
+				        memset(str, '\0', sizeof(str));
+		            	read(connfd,str, sizeof(str));	
 		        	}
 		        	memset(str, '\0', sizeof(str));
 		        	strcpy(str,"OK!Stop~");
 		            write(connfd, str, sizeof(str));
 		        }
+		        memset(buffer, '\0', sizeof(buffer));
                 fclose(fp);
                 flags = 0;
                 break;
@@ -211,14 +222,14 @@ int socket_server(int port)
         } else if(!strcicmp(buffer,"E")) { // Do Editor
             char file[100];
             memset(file, '\0', sizeof(file));
-            strcpy(file,"Please Input the filename you want to edit\n");
+            strcpy(file,"Please Input the filename you want to edit(don't need to .txt)\n");
             write(connfd, file, sizeof(file));
             memset(file, '\0', sizeof(file));
             flags = 2;
         } else if(!strcicmp(buffer,"C")) { // Do Create
             char file[30];
             memset(file, '\0', sizeof(file));
-            strcpy(file,"Please Input the filename\n");
+            strcpy(file,"Please Input the filename(don't need to .txt)\n");
             write(connfd, file, sizeof(file));
             memset(file, '\0', sizeof(file));
             flags = 1;
@@ -242,11 +253,13 @@ int socket_server(int port)
             strcpy(buffer,"DownLoad");
             write(connfd, buffer, sizeof(buffer));
             printf("Wait For DownLoaded File Name..\n");
+            memset(buffer, '\0', sizeof(buffer));
             read(connfd, buffer, sizeof(buffer));
             printf("DownLoaded File Name Gets: %s\n",buffer);
             memset(buffer_path, '\0', sizeof(buffer_path));
             strcpy(buffer_path,"GetPath");
             write(connfd, buffer_path, sizeof(buffer_path));
+            memset(buffer_path, '\0', sizeof(buffer_path));
             read(connfd, buffer_path, sizeof(buffer_path));
             printf("DownLoaded Side Path %s\n",buffer_path);
             downLoad(buffer,buffer_path);
