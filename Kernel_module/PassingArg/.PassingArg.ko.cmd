@@ -1,0 +1,1 @@
+cmd_/home/kevin/桌面/OS/Kernel_module/PassingArg/PassingArg.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /home/kevin/桌面/OS/Kernel_module/PassingArg/PassingArg.ko /home/kevin/桌面/OS/Kernel_module/PassingArg/PassingArg.o /home/kevin/桌面/OS/Kernel_module/PassingArg/PassingArg.mod.o

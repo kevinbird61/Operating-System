@@ -1,0 +1,15 @@
+TARGET = seqProcess
+obj-m := $(TARGET).o 
+KERNELDIR=/lib/modules/`uname -r`/build 
+PWD=`pwd` 
+
+default : 
+   $(MAKE) -C $(KERNELDIR) M=$(PWD) modules 
+
+install : 
+   insmod $(TARGET).ko 
+uninstall : 
+   rmmod $(TARGET).ko 
+
+clean : 
+   rm -rf *.o *.mod.c *.ko 

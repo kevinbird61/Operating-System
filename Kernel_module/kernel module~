@@ -1,0 +1,36 @@
+/* For a module work */
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/stat.h>
+/* For module_param */
+#include <linux/moduleparam.h>
+/* Necessary because we use the proc fs*/
+#include <linux/proc_fs.h>
+
+/* User defined */
+#define procfs_name "pInfo"
+
+/* Define the author */
+MODULE_AUTHOR("Kevin Chiu");
+/* Variable */
+//module_param();
+struct proc_dir_entry *Our_Proc_File;
+
+/* For Reading Procfile */
+int procfile_read(char *buffer,char **buffer_location,off_t offset,int buffer_length,int *eof,void *data){
+	int ret;
+	
+	printk(KERN "procfile_read(/proc/%s) called\n",procfs_name);
+	
+	if(offset > 0){
+		/* we have finished to read , return 0 */
+		ret = 0;
+	}else{
+		/* fill the buffer , return the buffer size */
+		ret = sprintf(buffer , "HelloWorld\n");
+	}
+	
+	return ret;
+}
+

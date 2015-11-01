@@ -1,0 +1,1 @@
+cmd_/home/kevin/桌面/OS/Kernel_module/seq_file_Process/seqProcess.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /home/kevin/桌面/OS/Kernel_module/seq_file_Process/seqProcess.ko /home/kevin/桌面/OS/Kernel_module/seq_file_Process/seqProcess.o /home/kevin/桌面/OS/Kernel_module/seq_file_Process/seqProcess.mod.o
