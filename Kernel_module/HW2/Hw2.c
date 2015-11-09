@@ -55,9 +55,9 @@ static int specify_proc_show(struct seq_file *m, void *v) {
   		seq_printf(m,"The child's name is [%s]\n",current_task->comm);
   		count++;
   	}
-  	if(count==2){
+  	/*if(count==2){
   		break;
-  	}
+  	}*/
   }
   return 0;
 }

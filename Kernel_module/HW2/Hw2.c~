@@ -44,8 +44,6 @@ static const struct file_operations seqPro_proc_fops = {
 /* ==========================For Reading specify the Process========================== */
 static int specify_proc_show(struct seq_file *m, void *v) {
   struct task_struct *current_task;
-  struct task_struct *child_task;
-  struct list_head child_list;
   int count=0;
   for_each_process(current_task){
   	if(current_task->pid == pid){
@@ -57,9 +55,9 @@ static int specify_proc_show(struct seq_file *m, void *v) {
   		seq_printf(m,"The child's name is [%s]\n",current_task->comm);
   		count++;
   	}
-  	if(count==2){
+  	/*if(count==2){
   		break;
-  	}
+  	}*/
   }
   return 0;
 }

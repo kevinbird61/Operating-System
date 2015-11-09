@@ -1,1 +1,0 @@
-cmd_/home/kevin/桌面/OS/Kernel_module/HW2/Hw2.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /home/kevin/桌面/OS/Kernel_module/HW2/Hw2.ko /home/kevin/桌面/OS/Kernel_module/HW2/Hw2.o /home/kevin/桌面/OS/Kernel_module/HW2/Hw2.mod.o

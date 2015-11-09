@@ -1,0 +1,4 @@
+使用的ubuntu version: 15.04
+使用的寫檔方式跟以往版本較為不同
+make過後變可以執行kernel module載入的動作
+
