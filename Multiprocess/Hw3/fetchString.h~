@@ -8,4 +8,3 @@ int fetch_specify_str(char* spec_str,char* source, int size_spec , int start , i
 int lengthof(char *filename);
 /* Get the content */
 char *contentof(char *filename,int size);
-

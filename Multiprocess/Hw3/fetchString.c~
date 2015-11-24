@@ -1,7 +1,7 @@
 #include "fetchString.h"
 
 int fetch_specify_str(char* spec_str,char* source, int size_spec , int start , int end){
-	int i , j , judge = 0, count = 0;
+	int i , j , judge = 0, count;
 	for( i = start ; i < end ; i++){
 		if(source[i] == spec_str[0]){
 			for(j = i ; j < i + size_spec ; j++){
