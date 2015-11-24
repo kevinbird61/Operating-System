@@ -7,4 +7,5 @@ fetchString.o : fetchString.c fetchString.h
 
 run:
 	./Hw3 input.txt "oslab2015" 3
-
+run_one:
+	./Hw3 input.txt "oslab2015" 1

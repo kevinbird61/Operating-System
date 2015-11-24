@@ -71,9 +71,9 @@ int main(int argc , char *argv[]){
 		//===================== Create the need amount of threads - end  ======================// 
 		//===================== Using the thread to calculate- start  ======================// 
 		/* For processor >0 , Do the threads jobs */
-		printf("The %d Pid - shmid is %d \n",pid , shmid);
+		//printf("The %d Pid - shmid is %d \n",pid , shmid);
 		shmaddr = (char*) shmat(shmid , NULL , 0); 
-		printf("The %d Pid - shmaddr is  %s \n",pid , shmaddr);
+		//printf("The %d Pid - shmaddr is  %s \n",pid , shmaddr);
 		shmval_addr = (char*)shmat(shmid_val , NULL , 0);
 		if(pid>0){
 			printf("This is iterative parent pid : %d\n",pid);
@@ -101,6 +101,7 @@ int main(int argc , char *argv[]){
 			// Processor 0
 			printf("This is iterative child pid %d\n",pid);
 			printf("Pid %d searching data's startIndex %d and Length is %d \n\n",pid,startSearch,searchLength);
+			// Calculate start
 			startSearch -= (cmplen - 1); // to have the buffer of one compare string
 			searchLength += (cmplen - 1);
 			 re_val = fetch_specify_str(searchString , source , cmplen , startSearch , startSearch+searchLength );
@@ -120,6 +121,8 @@ int main(int argc , char *argv[]){
 	else{
 		printf("Only one Thread!\n");
 		/*TODO do one thread things*/
+		 re_val = fetch_specify_str(searchString , source , cmplen , startSearch , startSearch+searchLength );
+		 printf("Only One Process: %d\n",re_val);
 	}
 	shmctl(shmid , IPC_RMID , NULL);
 	shmctl(shmid_val , IPC_RMID , NULL);
