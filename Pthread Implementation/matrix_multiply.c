@@ -10,9 +10,6 @@ int row_size , col_size , sec_mat_col;
 int **mat_first;
 int **mat_after;
 int **mat_result;
-/* MUTEX */
-pthread_mutex_t mutex_p = PTHREAD_MUTEX_INITIALIZER;
-int counter[2] = {0 ,0};
 
 int main(int argc,char *argv[]){
 	int i,j;
@@ -58,7 +55,7 @@ int main(int argc,char *argv[]){
 	for(thread = 0 ; thread < thread_count ; thread ++ ){
 		pthread_join(thread_handlers[thread],NULL);
 	}
-	
+	/* Print the result */
 	printf("%d %d \n" , row_size , sec_mat_col);
 	for(i = 0; i< row_size ; i++){
 		for(j = 0 ; j< sec_mat_col ; j++){
@@ -66,13 +63,13 @@ int main(int argc,char *argv[]){
 		}
 		printf("\n");
 	}
-	
+	/* Free the memory */
 	free(mat_first);
 	free(mat_after);
 	free(mat_result);
 	return 0;
 }
-
+/* Allocate the 2D - dimension array*/
 int **allocate_dim(int row , int col){
 	int i;
 	int **a = (int **)malloc(row * sizeof(int*) + (row*col*sizeof(int)) );
