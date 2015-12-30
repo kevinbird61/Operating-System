@@ -1,7 +1,15 @@
 #include "myfile.h"
 
 /* Implement file system create and delete */
-int myfs_create(const char *filesystemname , int max_size);
+int myfs_create(const char *filesystemname , int max_size){
+	// Create the file 
+	FILE *fd = fopen(filesystemname , "w");
+	// Store the max_size in this file (top)	
+	
+		
+	return 1;
+}
+
 int myfs_destroy(const char *filesystemname);
 
 /* File Operation */
