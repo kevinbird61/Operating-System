@@ -83,11 +83,11 @@ int command_execute(char *cmd){
 			if(cmd[5] == 'c' && cmd[6] == 'r' && cmd[7] == 'e' && cmd[8] == 'a' && cmd[9] == 't' && cmd[10] == 'e' ){
 			/* enter "disk_create"*/
 				// fetch the disk name and size
+				char diskname[64];
+				memset(diskname , '\0' , 64);
+				int max_size = -1;
 				if(cmd[12] != '\0'){
 					// read for the disk name and size
-					char diskname[64];
-					memset(diskname , '\0' , 64);
-					int max_size = -1;
 					sscanf(cmd,"%s %s %d",diskname,diskname,&max_size);
 					if(max_size == -1){
 						printf("Your disk name : %s ; But your haven't input the size !\n",diskname);
@@ -108,11 +108,11 @@ int command_execute(char *cmd){
 			else if(cmd[5] == 'd' && cmd[6] == 'e' && cmd[7] == 's' && cmd[8] == 't' && cmd[9] == 'r' && cmd[10] == 'o' && cmd[11] == 'y' ){
 			/* enter "disk_destroy" */
 				// fetch the disk name
+				char comd[64],diskname[64];
+				memset(diskname , '\0' , 64);
+				memset(comd,'\0',64);
 				if(cmd[13] != '\0'){
 					// read for the disk name and size
-					char comd[64],diskname[64];
-					memset(diskname , '\0' , 64);
-					memset(comd,'\0',64);
 					sscanf(cmd,"%s %s",comd,diskname);
 					//printf("%s , %s , %s \n",cmd ,comd ,diskname);
 					if(diskname[0] == '\0'){
@@ -127,7 +127,8 @@ int command_execute(char *cmd){
 					printf("You must input diskname => use \"help\" to check more!!\n");
 				}
 				// TODO destroy the disk (file) => find if it is exist or not
-				
+				myfs_destroy(diskname);
+								
 				return 1;
 			}
 			else{
@@ -313,6 +314,26 @@ int command_execute(char *cmd){
 		}
 		else{
 			printf("%s , is not fit with file operation!!\nPlease check with command \"help\"\n",cmd);
+		}
+	}
+	else if(cmd[0] == 'l'){
+		if(cmd[1] == 's'){
+			// do 'ls' command
+			DIR *d;
+			struct dirent *dir;
+			d = opendir(".");
+			if(d){
+				printf("The current directory's file : \n");
+				while((dir = readdir(d))!=NULL){
+					// read if directory is not empty
+					if (dir->d_type == DT_REG){
+						// check if it isn't sys file
+						printf("%s ", dir -> d_name);
+					}	
+				}
+				printf("\n");
+				closedir(d);
+			}
 		}
 	}
 	else{

@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+       
 /* Implement file system create and delete */
 int myfs_create(const char *filesystemname , int max_size);
 int myfs_destroy(const char *filesystemname);
