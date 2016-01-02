@@ -91,6 +91,7 @@ int command_execute(char *cmd){
 					sscanf(cmd,"%s %s %d",diskname,diskname,&max_size);
 					if(max_size == -1){
 						printf("Your disk name : %s ; But your haven't input the size !\n",diskname);
+						return 1;
 					}
 					else{
 						printf("Your input : %s ; size is %d\n", diskname , max_size);
@@ -99,6 +100,7 @@ int command_execute(char *cmd){
 				else{
 					// Type error
 					printf("You must input diskname and max size => use \"help\" to check more!!\n");
+					return 1;
 				}
 				// TODO Create the disk => use "myfile.c"
 				myfs_create(diskname , max_size);
@@ -117,6 +119,7 @@ int command_execute(char *cmd){
 					//printf("%s , %s , %s \n",cmd ,comd ,diskname);
 					if(diskname[0] == '\0'){
 						printf("Your haven't input the disk name you want to delete !\n");
+						return 1;
 					}
 					else{
 						printf("The disk you want to delete : %s \n", diskname);
@@ -125,6 +128,7 @@ int command_execute(char *cmd){
 				else{
 					// Type error
 					printf("You must input diskname => use \"help\" to check more!!\n");
+					return 1;
 				}
 				// TODO destroy the disk (file) => find if it is exist or not
 				myfs_destroy(diskname);
@@ -147,18 +151,20 @@ int command_execute(char *cmd){
 			if(cmd[5] == 'o' && cmd[6] == 'p' && cmd[7] == 'e' && cmd[8] == 'n' ){
 			/* enter "file_open" */
 				// fetch file and current diskname 
+				char comd[64], diskname[64] , filename[64];
 				if(cmd[10] != '\0'){
 				// read for the disk name and filename
-					char comd[64], diskname[64] , filename[64];
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
 					sscanf(cmd,"%s %s %s",comd,diskname,filename);
 					if(diskname[0] == '\0'){
 						printf("You don't have input the diskname!\n");
+						return 1;
 					}
 					else if(filename[0] == '\0'){
 						printf("You don't have input the filename!\n");
+						return 1;
 					}
 					else{
 						printf("The file you want to open : %s , which is in disk : %s\n",filename,diskname);
@@ -166,26 +172,44 @@ int command_execute(char *cmd){
 				}
 				else{
 					printf("You have to input diskname and filename ! \nPlease use \"help\" to check it ! \n");	
+					return 1;
 				}
 				// do the operation
-				
+				int i,filter;
+				filter = myfs_file_open(filename,diskname);
+				if(filter){
+					/* store in validFile */
+					for(i = 0; i < 128 ; i++){
+						if(validFile[i].file_id == -1){
+							validFile[i].file_id = i;
+							validFile[i].name = filename;
+							printf("Now open file : %s => Fild id is %d \n",validFile[i].name,validFile[i].file_id);
+							break;
+						}
+					}
+				}
+				else{
+					/* not found */
+				}
 				return 1;
 			}
 			else if(cmd[5] == 'c' && cmd[6] == 'l' && cmd[7] == 'o' && cmd[8] == 's' && cmd[9] == 'e' ){
 			/* enter "file_close" */
 				// fetch file and current diskname 
+				char comd[64], diskname[64] , filename[64];
 				if(cmd[11] != '\0'){
 				// read for the disk name and filename
-					char comd[64], diskname[64] , filename[64];
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
 					sscanf(cmd,"%s %s %s",comd,diskname,filename);
 					if(diskname[0] == '\0'){
 						printf("You don't have input the diskname!\n");
+						return 1;
 					}
 					else if(filename[0] == '\0'){
 						printf("You don't have input the filename!\n");
+						return 1;
 					}
 					else{
 						printf("The file you want to close : %s , which is in disk : %s\n",filename,diskname);
@@ -193,26 +217,45 @@ int command_execute(char *cmd){
 				}
 				else{
 					printf("You have to input diskname and filename ! \nPlease use \"help\" to check it ! \n");	
+					return 1;
 				}
 				// do the operation
-				
+				// search the validFile
+				int i,close_id,filter = 0;
+				for(i=0;i<128;i++){
+					if(!strcmp(filename,validFile[i].name)){
+						// have the compare result
+						close_id = validFile[i].file_id;
+						printf("Now closed file : %s => Fild id is %d has already closed\n",validFile[i].name,validFile[i].file_id);
+						filter = 1;
+						break;
+					}
+				}
+				if(filter){
+					myfs_file_close(close_id,diskname);
+				}
+				else{
+					printf("Sorry , not found this active file handler !\n");
+				}
 				return 1;
 			}
 			else if(cmd[5] == 'c' && cmd[6] == 'r' && cmd[7] == 'e' && cmd[8] == 'a' && cmd[9] == 't' && cmd[10] == 'e'){
 			/* enter "file_create" */
 				// fetch file and current diskname 
+				char comd[64], diskname[64] , filename[64];
 				if(cmd[12] != '\0'){
 				// read for the disk name and filename
-					char comd[64], diskname[64] , filename[64];
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
 					sscanf(cmd,"%s %s %s",comd,diskname,filename);
 					if(diskname[0] == '\0'){
 						printf("You don't have input the diskname!\n");
+						return 1;
 					}
 					else if(filename[0] == '\0'){
 						printf("You don't have input the filename!\n");
+						return 1;
 					}
 					else{
 						printf("The file you want to create : %s , which is in disk : %s\n",filename,diskname);
@@ -220,8 +263,10 @@ int command_execute(char *cmd){
 				}
 				else{
 					printf("You have to input diskname and filename ! \nPlease use \"help\" to check it ! \n");	
+					return 1;
 				}
 				// do the  create operation
+				
 				
 				return 1;	
 			}
