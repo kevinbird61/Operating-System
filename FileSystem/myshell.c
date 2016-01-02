@@ -56,6 +56,8 @@ int command_execute(char *cmd){
 			printf("\t\"file_delete filename diskname\" - delete a file\n");
 			printf("\t\"file_read filename diskname\" - read from a file\n");
 			printf("\t\"file_write filename diskname\" - write from a file\n");
+			printf("\t\"ls\" - to list current directory file\n");
+			printf("\t\"list_file\" - to list all valid file handler\n");
 			printf("\t\"exit\" - to leave mini-shell\n");
 			printf("Hope its useful for you!!\n\n");
 			return 1;
@@ -266,16 +268,16 @@ int command_execute(char *cmd){
 					return 1;
 				}
 				// do the  create operation
-				
+				myfs_file_create(filename , diskname);
 				
 				return 1;	
 			}
 			else if(cmd[5] == 'd' && cmd[6] == 'e' && cmd[7] == 'l' && cmd[8] == 'e' && cmd[9] == 't' && cmd[10] == 'e' ){
 			/* enter "file_delete" */
 				// fetch file and current diskname 
+				char comd[64], diskname[64] , filename[64];
 				if(cmd[12] != '\0'){
 				// read for the disk name and filename
-					char comd[64], diskname[64] , filename[64];
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
@@ -294,15 +296,15 @@ int command_execute(char *cmd){
 					printf("You have to input diskname and filename ! \nPlease use \"help\" to check it ! \n");	
 				}
 				// do the  delete operation
-				
+				myfs_file_delete(filename,diskname);
 				return 1;
 			}
 			else if(cmd[5] == 'r' && cmd[6] == 'e' && cmd[7] == 'a' && cmd[8] == 'd'){
 			/* enter "file_read" */
 				// fetch file and current diskname 
+				char comd[64], diskname[64] , filename[64];
 				if(cmd[10] != '\0'){
 				// read for the disk name and filename
-					char comd[64], diskname[64] , filename[64];
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
@@ -321,7 +323,24 @@ int command_execute(char *cmd){
 					printf("You have to input diskname and filename ! \nPlease use \"help\" to check it ! \n");	
 				}
 				// do the  read operation
-				
+				int i,fid,filter = 0;
+				char *buf;
+				int bufsize = 10;
+				for(i=0;i<128;i++){
+					if(validFile[i].name == filename){
+						printf("Now you want to read is %s file\n",validFile[i].name);
+						fid = validFile[i].file_id;
+						filter = 1;
+						break;
+					}
+				}
+				if(filter){
+					// TODO => do the reading bufsize from user (stdin)
+					myfs_file_read(fid,buf,bufsize);
+				}
+				else{
+					printf("Not found the open file handler!\n");
+				}
 				return 1;
 			}
 			else if(cmd[5] == 'w' && cmd[6] == 'r' && cmd[7] == 'i' && cmd[8] == 't' && cmd[9] == 'e'){
@@ -362,7 +381,7 @@ int command_execute(char *cmd){
 		}
 	}
 	else if(cmd[0] == 'l'){
-		if(cmd[1] == 's'){
+		if(cmd[1] == 's' && cmd[2] == '\0'){
 			// do 'ls' command
 			DIR *d;
 			struct dirent *dir;
@@ -379,6 +398,23 @@ int command_execute(char *cmd){
 				printf("\n");
 				closedir(d);
 			}
+		}
+		else if(cmd[1] == 'i' && cmd[2] == 's' && cmd[3] == 't' && cmd[4] == '_' && cmd[5] == 'f' && cmd[6] == 'i' && cmd[7] == 'l' && cmd[8] == 'e' && cmd[9] == '\0' ){
+			// do list all valid and unvalid file handler
+			int i;
+			printf("List all valid (o) and unvalid (x):\n");
+			for(i=0;i<128;i++){
+				if(i%16 == 0){
+					printf("\n");
+				}
+				if(validFile[i].file_id == -1){
+					printf(" x ");
+				}
+				else{
+					printf(" o ");
+				}
+			}
+			printf("\nEnd of Listing !\n");
 		}
 	}
 	else{

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -11,10 +12,9 @@ int myfs_destroy(const char *filesystemname);
 /* File Operation */
 // if return 1 , remind this filename is open
 int myfs_file_open(const char *filename,const char *diskname);
-
 int myfs_file_close(int fd,const char *diskname);
-int myfs_file_create(const char *filename);
-int myfs_file_delete(const char *filename);
+int myfs_file_create(const char *filename,const char *diskname);
+int myfs_file_delete(const char *filename , const char *diskname);
 int myfs_file_read(int fd , char *buf , int count);
 int myfs_file_write(int fd , char *buf , int count);
 

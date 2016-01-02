@@ -36,9 +36,6 @@ int myfs_file_open(const char *filename,const char *diskname){
 	    	char linebuffer[512] ;
 	    	char buffer1[512];
 	    	char buffer2[512];
-	    	int line_len=0;
-	    	int len = 0;
-	    	int res;
 	    	FILE *fp = fopen(diskname,"r+");
 	    	if(fp == NULL){
 	    		printf("open error");
@@ -85,15 +82,79 @@ int myfs_file_close(int fd,const char *diskname){
 
 int myfs_file_create(const char *filename , const char *diskname){
 	// Create a new file with the correct data structure and file attributes
-	
+	if( access( diskname , F_OK ) != -1 ) {
+		// disk exist
+		FILE *fp = fopen(diskname,"a");
+		fprintf(fp,"%s=>default\n",filename);
+		fclose(fp);
+	} else {
+		// file doesn't exist
+		printf("Can't find \"%s\" disk!\n",diskname);
+	}
+	return 1;
 }
 
-int myfs_file_delete(const char *filename){
+int myfs_file_delete(const char *filename,const char *diskname){
 	// Delete the chosen current file in data structure and file attributes
+	if( access( diskname , F_OK ) != -1 ) {
+		// disk exist
+		char linebuffer[512] = {0};
+		char buffer1[512] = {0};
+		char buffer2[512] = {0};
+		size_t line_len=0;
+		int len = 0;
+		int res;
+		FILE *fp = fopen(diskname,"r+"); 
+		if(fp == NULL){
+			printf("open error");
+			return -1;
+		}
+		while(fgets(linebuffer,512,fp)){
+			line_len = strlen(linebuffer);
+			len += line_len;
+			sscanf(linebuffer,"%[^=>]%s",buffer1,buffer2);
+			if(!strcmp(filename,buffer1)){
+				len -= strlen(linebuffer);
+				int buflen = strlen(buffer2) + strlen(buffer1);
+				res = fseek(fp,len,SEEK_SET);
+				if(res < 0){
+					perror("fseek error");
+					return -1;
+				}
+				strcpy(buffer2,"\0");
+				strcpy(buffer1,"\0");
+				int i;
+				for(i = 0 ; i < buflen ; i++){
+					strcat(buffer1," ");
+				}
+				fprintf(fp,"%s",buffer1);
+				fclose(fp);
+				return 1;
+			}
+		}
+		// not found
+		printf("Not found in %s disk\n",diskname);
+	} else {
+	    	// disk doesn't exist
+	   	printf("Can't find \"%s\" disk!\n",diskname);
+	}
+	return 1;
 }
 
 int myfs_file_read(int fd , char *buf , int count){
 	// read from the chosen file with limited-number of word
+	int i;
+	char *filename;
+	for(i=0;i<128;i++){
+		if(validFile[i].file_id == fd){
+			//printf("Now you want to read is %s file\n",validFile[i].name);
+			filename = validFile[i].name;
+			break;
+		}
+	}
+	// TODO : Read from this filename's buffer 
+	
+	return 1;
 }
 
 int myfs_file_write(int fd , char *buf , int count){
