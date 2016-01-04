@@ -153,12 +153,57 @@ int myfs_file_read(int fd , char *buf , int count){
 		}
 	}
 	// TODO : Read from this filename's buffer 
-	
 	return 1;
 }
 
 int myfs_file_write(int fd , char *buf , int count){
 	// write in the chosen file with limited-number of word
+	int i;
+	char *filename;
+	for(i=0;i<128;i++){
+		if(validFile[i].file_id == fd){
+			filename = validFile[i].name;
+			break;
+		}
+	}
+	// TODO : Write into this filename from the outside buffer
+	printf("All you can type in here : (Press \":wq\" + Enter to leave)\n");
+	char totalbuf[1024];
+	char writebuf[1024];
+	int bufindex = 0;
+	memset(totalbuf,'\0',1024);
+	memset(writebuf,'\0',1024);
+	while(1){
+		char temp;
+		temp = getchar();
+		if(temp == 10){
+			// TODO : leave
+			if(!strcmp(writebuf,":wq")){
+				printf("End of Input , prepare to store into %s file\n",filename);
+				break;
+			}
+			else{
+				printf("For a line write : %s , prepare to store in buffer\n",writebuf);
+				strcat(totalbuf,writebuf);
+				strcat(totalbuf,"$"); // For next line replace character => for read
+				// clear buf
+				memset(writebuf,'\0',1024);
+				bufindex = 0;
+			}
+		}
+		else if( temp == 8){
+			// Backspace = 8
+			bufindex--;
+			writebuf[bufindex] = 0;
+		}	
+		else{
+			// write in buffer
+			writebuf[bufindex] = temp;
+			bufindex++;
+		}
+	}
+	printf("Total buffer is %s\n" , totalbuf);
+	
 }
 
 /* make directory */

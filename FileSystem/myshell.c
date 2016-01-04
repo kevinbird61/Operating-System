@@ -17,6 +17,7 @@ char *command_read(){
 	int bufsize = READBUF;
 	int position = 0;
 	char *buffer = malloc(bufsize*sizeof(char));
+	//char *history = malloc(bufsize*sizeof(char));
 	char c;
 	/* if buffer create fail */
 	if(!buffer){
@@ -29,6 +30,7 @@ char *command_read(){
 		// judge to keep or stop
 		if(c==EOF || c=='\n'){
 			buffer[position] = '\0';
+			// store the history buffer
 			//return result
 			return buffer;
 		}
@@ -339,25 +341,27 @@ int command_execute(char *cmd){
 					myfs_file_read(fid,buf,bufsize);
 				}
 				else{
-					printf("Not found the open file handler!\n");
+					printf("Not found the open file handler to read!\n");
 				}
 				return 1;
 			}
 			else if(cmd[5] == 'w' && cmd[6] == 'r' && cmd[7] == 'i' && cmd[8] == 't' && cmd[9] == 'e'){
 			/* enter "file_write" */
 				// fetch file and current diskname 
+				char comd[64], diskname[64] , filename[64];
 				if(cmd[11] != '\0'){
 				// read for the disk name and filename
-					char comd[64], diskname[64] , filename[64];
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
 					sscanf(cmd,"%s %s %s",comd,diskname,filename);
 					if(diskname[0] == '\0'){
 						printf("You don't have input the diskname!\n");
+						return 1;
 					}
 					else if(filename[0] == '\0'){
 						printf("You don't have input the filename!\n");
+						return 1;
 					}
 					else{
 						printf("The file you want to write : %s , which is in disk : %s\n",filename,diskname);
@@ -365,9 +369,25 @@ int command_execute(char *cmd){
 				}
 				else{
 					printf("You have to input diskname and filename ! \nPlease use \"help\" to check it ! \n");	
+					return 1;
 				}
 				// do the  write operation
-				
+				int i,fid,filter = 0,bufsize = 10;
+				char *buf;
+				for(i=0;i<128;i++){
+					if(validFile[i].name == filename){
+						fid = validFile[i].file_id;
+						filter = 1;
+						break;
+					}
+				}
+				if(filter){
+					// TODO : read from stdin (user) and then store the string to buffer
+					myfs_file_write(fid,buf,bufsize);
+				}
+				else{
+					printf("Not found the open file handler to write!\n");
+				}
 				return 1;
 			}
 			else{
@@ -415,6 +435,10 @@ int command_execute(char *cmd){
 				}
 			}
 			printf("\nEnd of Listing !\n");
+		}
+		else{
+		// Exception
+			printf("%s , is not fit with file operation!!\nPlease check with command \"help\"\n",cmd);
 		}
 	}
 	else{
