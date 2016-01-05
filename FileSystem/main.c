@@ -8,6 +8,7 @@ int main(int argc , char *argv[]){
 	for(i=0;i<128;i++){
 		validFile[i].file_id = -1;
 		validFile[i].name = "";
+		validFile[i].disk = "";
 	}
 	// implement the mini shell , to ask user to do the operation
 	fetch_command();

@@ -144,25 +144,53 @@ int myfs_file_delete(const char *filename,const char *diskname){
 int myfs_file_read(int fd , char *buf , int count){
 	// read from the chosen file with limited-number of word
 	int i;
-	char *filename;
+	char *filename,*diskname;
 	for(i=0;i<128;i++){
 		if(validFile[i].file_id == fd){
 			//printf("Now you want to read is %s file\n",validFile[i].name);
 			filename = validFile[i].name;
+			diskname = validFile[i].disk;
 			break;
 		}
 	}
-	// TODO : Read from this filename's buffer 
+	// Read from this filename's buffer 
+	char linebuffer[512] = {0};
+	char buffer1[512] = {0};
+	char buffer2[512] = {0};
+	int bufindex = 0;
+	FILE *fp = fopen(diskname , "r+");
+	if(fp == NULL){
+		printf("Open disk in read file error\n");
+		return -1;
+	}
+	while(fgets(linebuffer,512,fp)){
+		sscanf(linebuffer , "%[^=>]=>%[^\n]\n",buffer1,buffer2);
+		if(!strcmp(filename , buffer1)){
+			break;
+		}
+	}
+	// parse the buffer2
+	while(buffer2[bufindex]){
+		if(buffer2[bufindex] == FILE_NL_CHAR){
+			printf("\n");
+		}
+		else{
+			printf("%c",buffer2[bufindex]);
+		}
+		bufindex++;
+	}
+	printf("\n");
 	return 1;
 }
 
 int myfs_file_write(int fd , char *buf , int count){
 	// write in the chosen file with limited-number of word
 	int i;
-	char *filename;
+	char *filename,*diskname;
 	for(i=0;i<128;i++){
 		if(validFile[i].file_id == fd){
 			filename = validFile[i].name;
+			diskname = validFile[i].disk;
 			break;
 		}
 	}
@@ -179,13 +207,13 @@ int myfs_file_write(int fd , char *buf , int count){
 		if(temp == 10){
 			// TODO : leave
 			if(!strcmp(writebuf,":wq")){
-				printf("End of Input , prepare to store into %s file\n",filename);
+				printf("End of Input , prepare to store into \"%s\" file\n",filename);
 				break;
 			}
 			else{
 				printf("For a line write : %s , prepare to store in buffer\n",writebuf);
 				strcat(totalbuf,writebuf);
-				strcat(totalbuf,"$"); // For next line replace character => for read
+				strcat(totalbuf,FILE_NL_STR); // For next line replace character => for read
 				// clear buf
 				memset(writebuf,'\0',1024);
 				bufindex = 0;
@@ -202,8 +230,57 @@ int myfs_file_write(int fd , char *buf , int count){
 			bufindex++;
 		}
 	}
-	printf("Total buffer is %s\n" , totalbuf);
-	
+	//printf("Total buffer is %s\n" , totalbuf);
+	// Prepare to store in file
+	char linebuffer[512] = {0};
+	char buffer1[512] = {0};
+	char buffer2[512] = {0};
+	int line_len = 0;
+	int len = 0;
+	int res;
+	// Open file (disk) to write
+	FILE *fp = fopen(diskname,"r+");
+	if(fp == NULL){
+		printf("Open disk in write error");
+		return -1;
+	}
+	while(fgets(linebuffer , 512 , fp)){
+		line_len = strlen(linebuffer);
+		len += line_len;
+		sscanf(linebuffer,"%[^=>]=>%[^\n]\n",buffer1,buffer2);
+		if(!strcmp(filename,buffer1)){
+			// compare is get
+			len -= strlen(linebuffer);
+			//printf("Length : %d , buffer2 : %s\n",len , buffer2);
+			int buflen = strlen(buffer2);
+			res = fseek(fp , len , SEEK_SET);
+			if(res < 0 ){
+				perror("fseek in write file error");
+				return -1;
+			}
+			// and then copy the data from totalbuf to buffer2
+			memset(buffer2 , '\0' , 512); // clear the buffer2
+			strcpy(buffer2 , totalbuf);
+			int total = (int)strlen(totalbuf);
+			//printf("Totalbuf strlen : %d ; buflen : %d\n",total,buflen);
+			if(total< buflen){
+			// use blank to eliminate dead character
+				int i;
+				for(i=0;i<buflen;i++){
+					strcat(buffer2, " ");
+				}
+			}
+			//printf("Buffer2 now is %s\n",buffer2);
+			strcat(buffer1, "=>"); // for sign
+			strcat(buffer1,buffer2);
+			//printf("The write back now is %s\n",buffer2);
+			// Write back to file (disk)
+			fprintf(fp,"%s",buffer1);
+			fclose(fp);
+			return 1;
+		}
+	}
+	return 1;
 }
 
 /* make directory */

@@ -4,7 +4,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-       
+
+/* FILE new line replacing character */
+#define FILE_NL_CHAR '$'
+#define FILE_NL_STR "$"
+
 /* Implement file system create and delete */
 int myfs_create(const char *filesystemname , int max_size);
 int myfs_destroy(const char *filesystemname);
@@ -23,6 +27,7 @@ Name , Identifier , Type , Location , Size , Protection , Time
 */
 typedef struct __valid_file{
 	char *name;
+	char *disk;
 	int file_id;
 }ValidF;
 ValidF validFile[128];

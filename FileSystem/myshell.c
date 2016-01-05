@@ -187,7 +187,8 @@ int command_execute(char *cmd){
 						if(validFile[i].file_id == -1){
 							validFile[i].file_id = i;
 							validFile[i].name = filename;
-							printf("Now open file : %s => Fild id is %d \n",validFile[i].name,validFile[i].file_id);
+							validFile[i].disk = diskname;
+							printf("Now open file : %s => File id is %d \n",validFile[i].name,validFile[i].file_id);
 							break;
 						}
 					}
