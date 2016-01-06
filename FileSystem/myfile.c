@@ -15,7 +15,7 @@ int myfs_create(const char *filesystemname , int max_size){
 			return -1;
 		}
 		// Store the max_size in this file (top)	
-		fprintf(fd,"%d\n",max_size);
+		fprintf(fd,"MAXIMAL_SIZE==%d\n",max_size);
 		fprintf(fd,"home : 1");
 		fclose(fd);
 	}
@@ -36,12 +36,20 @@ int myfs_file_open(const char *filename,const char *diskname){
 	    	char linebuffer[512] ;
 	    	char buffer1[512];
 	    	char buffer2[512];
+	    	char start[16];
+	    	int size;
 	    	FILE *fp = fopen(diskname,"r+");
 	    	if(fp == NULL){
 	    		printf("open error");
 	    		return -1;
 	    	}
 	    	while(fgets(linebuffer,512,fp)){
+	    		sscanf(linebuffer,"%[^==]==%d\n",start,&size);
+	    		//printf("start is %s ; size is %d\n",start,size);
+	    		if(!strcmp(start,"MAXIMAL_SIZE")){
+	    			current_disk_size = size;
+	    			printf("Current disk size is %d\n",current_disk_size);
+	    		}
 	    		sscanf(linebuffer,"%[^=>]=>%[^\n]",buffer1,buffer2);
 	    		//printf("%s , %s\n\n",filename , buffer1);
 	    		if(!strcmp(filename,buffer1)){
@@ -103,7 +111,7 @@ int myfs_file_delete(const char *filename,const char *diskname){
 		char buffer2[512] = {0};
 		size_t line_len=0;
 		int len = 0;
-		int res;
+		int res,filter = 0;
 		FILE *fp = fopen(diskname,"r+"); 
 		if(fp == NULL){
 			printf("open error");
@@ -112,7 +120,7 @@ int myfs_file_delete(const char *filename,const char *diskname){
 		while(fgets(linebuffer,512,fp)){
 			line_len = strlen(linebuffer);
 			len += line_len;
-			sscanf(linebuffer,"%[^=>]%s",buffer1,buffer2);
+			sscanf(linebuffer,"%[^=>]%[^\n]",buffer1,buffer2);
 			if(!strcmp(filename,buffer1)){
 				len -= strlen(linebuffer);
 				int buflen = strlen(buffer2) + strlen(buffer1);
@@ -121,6 +129,14 @@ int myfs_file_delete(const char *filename,const char *diskname){
 					perror("fseek error");
 					return -1;
 				}
+				// size - strlen 
+				current_disk_size += strlen(buffer2);
+				if(current_disk_size > DISK_SIZE  ){
+					filter = 2;
+					fclose(fp);
+					break;
+				}
+				// cover buffer2 , buffer1
 				strcpy(buffer2,"\0");
 				strcpy(buffer1,"\0");
 				int i;
@@ -129,11 +145,63 @@ int myfs_file_delete(const char *filename,const char *diskname){
 				}
 				fprintf(fp,"%s",buffer1);
 				fclose(fp);
-				return 1;
+				filter = 1;
+				break;
 			}
 		}
+		
+		if(filter == 1){
+		// found and store the size back to disk
+			int size,i,res,len = 0;
+			size_t line_len=0;
+			char title[32],size_int[32];
+			FILE *fp = fopen(diskname,"r+"); 
+			if(fp == NULL){
+			printf("open error");
+			return -1;
+			}
+			while(fgets(linebuffer,512,fp)){
+				line_len = strlen(linebuffer);
+				len += line_len;
+				sscanf(linebuffer,"%[^==]==%d\n",title,&size);
+				//itoa( size , size_int , 10 );
+				//printf("title is %s , size is %d\n",title,size);
+				sprintf(size_int , "%d" ,size);
+				//printf("title is %s , size is %s\n",title,size_int);
+				if(!strcmp(title,"MAXIMAL_SIZE")){
+					// prepare to replace the size
+					len -= strlen(linebuffer);
+					int buflen = strlen(size_int);
+					sprintf(size_int , "%d" , current_disk_size);
+					res = fseek(fp,len,SEEK_SET);
+					if(res < 0){
+					perror("fseek error");
+					return -1;
+					}
+					if(current_disk_size < size){
+						for(i = 0 ; i < buflen ; i++){
+							strcat(size_int," ");
+						}
+					}
+					strcat(title,"==");
+					strcat(title,size_int);
+					//printf("Store back is %s\n",title);
+					fprintf(fp,"%s",title);
+					fclose(fp);
+					break;
+				}
+			}
+		}
+		else if(filter == 2){
+		// size is bigger than before
+			printf("Not enough space for file write! Write Error Occur!\n");
+		}
+		else{
 		// not found
-		printf("Not found in %s disk\n",diskname);
+			printf("Not found in %s disk\n",diskname);
+			fclose(fp);
+		}
+		
 	} else {
 	    	// disk doesn't exist
 	   	printf("Can't find \"%s\" disk!\n",diskname);
@@ -251,8 +319,15 @@ int myfs_file_write(int fd , char *buf , int count){
 		if(!strcmp(filename,buffer1)){
 			// compare is get
 			len -= strlen(linebuffer);
-			//printf("Length : %d , buffer2 : %s\n",len , buffer2);
 			int buflen = strlen(buffer2);
+			// check whether it has the rest space
+			current_disk_size += buflen;
+			int writelen = strlen(totalbuf);
+			current_disk_size -= writelen;
+			if(current_disk_size < 0){
+				printf("There hasn't the extra space to store your file!\n");
+				break;
+			}
 			res = fseek(fp , len , SEEK_SET);
 			if(res < 0 ){
 				perror("fseek in write file error");
@@ -277,7 +352,49 @@ int myfs_file_write(int fd , char *buf , int count){
 			// Write back to file (disk)
 			fprintf(fp,"%s",buffer1);
 			fclose(fp);
-			return 1;
+			//return 1;
+		}
+	}
+	// Store back the size of disk
+	// found and store the size back to disk
+	int size;
+	len = 0;
+	line_len=0;
+	char title[32],size_int[32];
+	FILE *fs = fopen(diskname,"r+"); 
+	if(fs == NULL){
+		printf("open error");
+		return -1;
+	}
+	while(fgets(linebuffer,512,fs)){
+		line_len = strlen(linebuffer);
+		len += line_len;
+		sscanf(linebuffer,"%[^==]==%d\n",title,&size);
+		sprintf(size_int , "%d" ,size);
+		//printf("title is %s , size is %s\n",title,size_int);
+		if(!strcmp(title,"MAXIMAL_SIZE")){
+			// prepare to replace the size
+			len -= strlen(linebuffer);
+			int buflen = strlen(size_int);
+			printf("Past size is %s\n",size_int);
+			sprintf(size_int , "%d" , current_disk_size);
+			printf("Current size is %s\n",size_int);
+			res = fseek(fs,len,SEEK_SET);
+			if(res < 0){
+				perror("fseek error");
+				return -1;
+			}
+			if(current_disk_size < size){
+				for(i = 0 ; i < buflen ; i++){
+				strcat(size_int," ");
+				}
+			}
+			strcat(title,"==");
+			strcat(title,size_int);
+			printf("Store back is %s\n",title);
+			fprintf(fs,"%s",title);
+			fclose(fs);
+			break;
 		}
 	}
 	return 1;

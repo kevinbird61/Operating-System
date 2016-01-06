@@ -8,7 +8,7 @@
 /* FILE new line replacing character */
 #define FILE_NL_CHAR '$'
 #define FILE_NL_STR "$"
-
+#define DISK_SIZE 1024
 /* File Attributes data struction
 Name , Identifier , Type , Location , Size , Protection , Time
 */
@@ -18,7 +18,7 @@ typedef struct __valid_file{
 	int file_id;
 }ValidF;
 ValidF validFile[128];
-
+int current_disk_size;
 /* Implement file system create and delete */
 int myfs_create(const char *filesystemname , int max_size);
 int myfs_destroy(const char *filesystemname);
