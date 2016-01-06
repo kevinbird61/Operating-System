@@ -9,6 +9,16 @@
 #define FILE_NL_CHAR '$'
 #define FILE_NL_STR "$"
 
+/* File Attributes data struction
+Name , Identifier , Type , Location , Size , Protection , Time
+*/
+typedef struct __valid_file{
+	char *name;
+	char *disk;
+	int file_id;
+}ValidF;
+ValidF validFile[128];
+
 /* Implement file system create and delete */
 int myfs_create(const char *filesystemname , int max_size);
 int myfs_destroy(const char *filesystemname);
@@ -21,18 +31,6 @@ int myfs_file_create(const char *filename,const char *diskname);
 int myfs_file_delete(const char *filename , const char *diskname);
 int myfs_file_read(int fd , char *buf , int count);
 int myfs_file_write(int fd , char *buf , int count);
-
-/* File Attributes data struction
-Name , Identifier , Type , Location , Size , Protection , Time
-*/
-typedef struct __valid_file{
-	char *name;
-	char *disk;
-	int file_id;
-}ValidF;
-ValidF validFile[128];
-/* Implement Open-file-Table Struction (file handler) */
-
 
 /*
 Bonus : 

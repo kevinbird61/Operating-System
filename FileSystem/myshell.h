@@ -9,3 +9,5 @@
 void fetch_command();
 char *command_read();
 int command_execute();
+
+char current_disk[32];

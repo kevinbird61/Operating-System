@@ -58,7 +58,8 @@ int command_execute(char *cmd){
 			printf("\t\"file_delete filename diskname\" - delete a file\n");
 			printf("\t\"file_read filename diskname\" - read from a file\n");
 			printf("\t\"file_write filename diskname\" - write from a file\n");
-			printf("\t\"ls\" - to list current directory file\n");
+			printf("\t\"ls_true\" - to list current directory file (True workspace directory)\n");
+			printf("\t\"ls\" - to list current directory file (disk-like file directory)\n");
 			printf("\t\"list_file\" - to list all valid file handler\n");
 			printf("\t\"exit\" - to leave mini-shell\n");
 			printf("Hope its useful for you!!\n\n");
@@ -188,6 +189,7 @@ int command_execute(char *cmd){
 							validFile[i].file_id = i;
 							validFile[i].name = filename;
 							validFile[i].disk = diskname;
+							strcpy(current_disk,diskname);
 							printf("Now open file : %s => File id is %d \n",validFile[i].name,validFile[i].file_id);
 							break;
 						}
@@ -231,6 +233,7 @@ int command_execute(char *cmd){
 					if(!strcmp(filename,validFile[i].name)){
 						// have the compare result
 						close_id = validFile[i].file_id;
+						strcpy(current_disk,"NULL");
 						printf("Now closed file : %s => Fild id is %d has already closed\n",validFile[i].name,validFile[i].file_id);
 						filter = 1;
 						break;
@@ -403,21 +406,28 @@ int command_execute(char *cmd){
 	}
 	else if(cmd[0] == 'l'){
 		if(cmd[1] == 's' && cmd[2] == '\0'){
-			// do 'ls' command
-			DIR *d;
-			struct dirent *dir;
-			d = opendir(".");
-			if(d){
-				printf("The current directory's file : \n");
-				while((dir = readdir(d))!=NULL){
-					// read if directory is not empty
-					if (dir->d_type == DT_REG){
-						// check if it isn't sys file
-						printf("%s ", dir -> d_name);
-					}	
+			// do fake 'ls' command
+			if(!strcmp(current_disk,"NULL")){
+				printf("No current disk have the file open!!\n");
+			}
+			else{
+				printf("Now list all the file below %s disk :\n",current_disk);
+				FILE *fp = fopen(current_disk,"r+");
+				char linebuffer[512];
+				char file_name[32];
+				memset(file_name , '\0' , sizeof(file_name));
+				char nonuse[512];
+				memset(nonuse , '\0' , sizeof(nonuse));
+				while(fgets(linebuffer,512,fp)){
+					//printf("This line is %s\n",linebuffer);
+					sscanf(linebuffer,"%[^=>]=>%s\n",file_name,nonuse);
+					if(strlen(nonuse) > 1){
+						printf("%s\n",file_name);
+						memset(nonuse , '\0' , sizeof(nonuse));
+					}
+					memset(file_name , '\0' , sizeof(file_name));
 				}
-				printf("\n");
-				closedir(d);
+				printf("\nEND of Listing \n");
 			}
 		}
 		else if(cmd[1] == 'i' && cmd[2] == 's' && cmd[3] == 't' && cmd[4] == '_' && cmd[5] == 'f' && cmd[6] == 'i' && cmd[7] == 'l' && cmd[8] == 'e' && cmd[9] == '\0' ){
@@ -436,6 +446,24 @@ int command_execute(char *cmd){
 				}
 			}
 			printf("\nEnd of Listing !\n");
+		}
+		else if(cmd[1] == 's' && cmd[2] == '_' && cmd[3] == 't' && cmd[4] == 'r' && cmd[5] == 'u' && cmd[6] == 'e' && cmd[7] == '\0' ){
+			// do the true "ls" command
+			DIR *d;
+			struct dirent *dir;
+			d = opendir(".");
+			if(d){
+				printf("The current directory's file : \n");
+				while((dir = readdir(d))!=NULL){
+					// read if directory is not empty
+					if (dir->d_type == DT_REG){
+						// check if it isn't sys file
+						printf("%s ", dir -> d_name);
+					}	
+				}
+				printf("\n");
+				closedir(d);
+			}
 		}
 		else{
 		// Exception
