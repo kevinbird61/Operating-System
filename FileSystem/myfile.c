@@ -316,6 +316,18 @@ int myfs_file_write(int fd , char *buf , int count){
 			// write in buffer
 			writebuf[bufindex] = temp;
 			bufindex++;
+			if( bufindex >= count ){
+			// Out of the input size
+				printf("Your input size has exceed the limited size! Stop \n");
+				printf("End of Input , prepare to store into \"%s\" file\n",filename);
+				strcat(totalbuf,writebuf);
+				strcat(totalbuf,FILE_NL_STR); // For next line replace character => for read
+				// clear buf
+				memset(writebuf,'\0',1024);
+				bufindex = 0;
+				break;
+			}
+			
 		}
 	}
 	//printf("Total buffer is %s\n" , totalbuf);
@@ -336,7 +348,7 @@ int myfs_file_write(int fd , char *buf , int count){
 		line_len = strlen(linebuffer);
 		len += line_len;
 		sscanf(linebuffer,"%[^=>]=>%[^\n]\n",buffer1,buffer2);
-		printf("buffer1 in file write is %s , buffer2 is %s\n",buffer1,buffer2);
+		//printf("buffer1 in file write is %s , buffer2 is %s\n",buffer1,buffer2);
 		if(!strcmp(filename,buffer1)){
 			// compare is get
 			len -= strlen(linebuffer);
