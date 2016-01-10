@@ -58,8 +58,9 @@ int command_execute(char *cmd){
 			printf("\t\"file_delete diskname filename\" - delete a file\n");
 			printf("\t\"file_read diskname filename size(dec)\" - read from a file\n");
 			printf("\t\"file_write diskname filename size(dec)\" - write from a file\n");
-			printf("\t\"ls_true\" - to list current directory file (True workspace directory)\n");
 			printf("\t\"ls\" - to list current directory file (disk-like file directory)\n");
+			printf("\t\"ls_disk\" - to list the disk user has been created before\n");
+			printf("\t\"ls_true\" - to list current directory file (True workspace directory)\n");
 			printf("\t\"list_file\" - to list all valid file handler\n");
 			printf("\t\"exit\" - to leave mini-shell\n");
 			printf("Hope its useful for you!!\n\n");
@@ -275,7 +276,6 @@ int command_execute(char *cmd){
 				}
 				// do the  create operation
 				myfs_file_create(filename , diskname);
-				
 				return 1;	
 			}
 			else if(cmd[5] == 'd' && cmd[6] == 'e' && cmd[7] == 'l' && cmd[8] == 'e' && cmd[9] == 't' && cmd[10] == 'e' ){
@@ -442,6 +442,37 @@ int command_execute(char *cmd){
 					memset(file_name , '\0' , sizeof(file_name));
 				}
 				printf("\nEND of Listing \n");
+			}
+		}
+		else if(cmd[1] == 's' && cmd[2] == '_' && cmd[3] == 'd' && cmd[4] == 'i' && cmd[5] == 's' && cmd[6] == 'k' && cmd[7] == '\0'){
+			// List the disk you have allocate
+			DIR *d;
+			struct dirent *dir;
+			d = opendir(".");
+			if(d){
+				printf("The disk you have already created before : \n");
+				while((dir = readdir(d))!=NULL){
+					// read if directory is not empty
+					if (dir->d_type == DT_REG){
+						// check if it isn't sys file
+						//printf("%s ", dir -> d_name);
+						if(!strcmp(dir->d_name,"Makefile") || !strcmp(dir->d_name,"hw5")){
+							// hw5 or Makefile => do nothing 
+						}
+						else{
+							char checkname[256];
+							char file_extent[16];
+							strcpy(file_extent,"NULL");
+							sscanf(dir->d_name,"%[^.].%s",checkname,file_extent);
+							if(!strcmp(file_extent,"NULL")){
+								// this is the disk file
+								printf("%s ",checkname);
+							}
+						}
+					}	
+				}
+				printf("\n");
+				closedir(d);
 			}
 		}
 		else if(cmd[1] == 'i' && cmd[2] == 's' && cmd[3] == 't' && cmd[4] == '_' && cmd[5] == 'f' && cmd[6] == 'i' && cmd[7] == 'l' && cmd[8] == 'e' && cmd[9] == '\0' ){

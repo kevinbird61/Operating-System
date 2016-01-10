@@ -94,7 +94,7 @@ int myfs_file_create(const char *filename , const char *diskname){
 	// Create a new file with the correct data structure and file attributes
 	if( access( diskname , F_OK ) != -1 ) {
 		// disk exist
-		FILE *fp = fopen(diskname,"a");
+		FILE *fp = fopen(diskname,"r+");
 		//fprintf(fp,"%s=>default\n",filename);
 		char line[1024];
 		char find[256];
@@ -102,7 +102,7 @@ int myfs_file_create(const char *filename , const char *diskname){
 		memset(find,'\0',256);
 		memset(buffer,'\0',1024);
 		while(fgets(line,1024,fp)){
-			sscanf(line,"%[^\n]=>%[^\n]",find,buffer);
+			sscanf(line,"%[^=>]=>%[^\n]",find,buffer);
 			if(!strcmp(filename,find)){
 				// there exist the same file!
 				printf("There have the same file!\n");
@@ -335,7 +335,7 @@ int myfs_file_write(int fd , char *buf , int count){
 	while(fgets(linebuffer , 512 , fp)){
 		line_len = strlen(linebuffer);
 		len += line_len;
-		sscanf(linebuffer,"%[^\n]=>%[^\n]\n",buffer1,buffer2);
+		sscanf(linebuffer,"%[^=>]=>%[^\n]\n",buffer1,buffer2);
 		printf("buffer1 in file write is %s , buffer2 is %s\n",buffer1,buffer2);
 		if(!strcmp(filename,buffer1)){
 			// compare is get
