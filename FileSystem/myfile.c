@@ -16,7 +16,7 @@ int myfs_create(const char *filesystemname , int max_size){
 		}
 		// Store the max_size in this file (top)	
 		fprintf(fd,"MAXIMAL_SIZE==%d\n",max_size);
-		fprintf(fd,"home : 1");
+		//fprintf(fd,"home:1\n");
 		fclose(fd);
 	}
 	return 1;
@@ -63,7 +63,9 @@ int myfs_file_open(const char *filename,const char *diskname){
 	} else {
 	    // disk doesn't exist
 	    printf("Can't find \"%s\" disk !\n",diskname);
+	    return -1;
 	}
+	return -1;
 }
 
 int myfs_file_close(int fd,const char *diskname){
@@ -93,6 +95,22 @@ int myfs_file_create(const char *filename , const char *diskname){
 	if( access( diskname , F_OK ) != -1 ) {
 		// disk exist
 		FILE *fp = fopen(diskname,"a");
+		//fprintf(fp,"%s=>default\n",filename);
+		char line[1024];
+		char find[256];
+		char buffer[1024];
+		memset(find,'\0',256);
+		memset(buffer,'\0',1024);
+		while(fgets(line,1024,fp)){
+			sscanf(line,"%[^\n]=>%[^\n]",find,buffer);
+			if(!strcmp(filename,find)){
+				// there exist the same file!
+				printf("There have the same file!\n");
+				fclose(fp);
+				return 0;
+			}
+		}
+		// Create one
 		fprintf(fp,"%s=>default\n",filename);
 		fclose(fp);
 	} else {
@@ -237,8 +255,10 @@ int myfs_file_read(int fd , char *buf , int count){
 			break;
 		}
 	}
+	buf = buffer2;
 	// parse the buffer2
-	while(buffer2[bufindex]){
+	printf("Count is %d\n",count);
+	while(buffer2[bufindex] && (bufindex < count)){
 		if(buffer2[bufindex] == FILE_NL_CHAR){
 			printf("\n");
 		}
@@ -315,7 +335,8 @@ int myfs_file_write(int fd , char *buf , int count){
 	while(fgets(linebuffer , 512 , fp)){
 		line_len = strlen(linebuffer);
 		len += line_len;
-		sscanf(linebuffer,"%[^=>]=>%[^\n]\n",buffer1,buffer2);
+		sscanf(linebuffer,"%[^\n]=>%[^\n]\n",buffer1,buffer2);
+		printf("buffer1 in file write is %s , buffer2 is %s\n",buffer1,buffer2);
 		if(!strcmp(filename,buffer1)){
 			// compare is get
 			len -= strlen(linebuffer);

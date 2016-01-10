@@ -52,12 +52,12 @@ int command_execute(char *cmd){
 			printf("Here comes some useful tips:\n");
 			printf("\t\"disk_create disk_name size\" - create disk\n");
 			printf("\t\"disk_destroy disk_name\" - destroy the disk\n");
-			printf("\t\"file_open file_name diskname\" - open a exist file\n");
-			printf("\t\"file_close file_name diskname\" - close a exist file\n");
-			printf("\t\"file_create filename diskname\" - create a file\n");
-			printf("\t\"file_delete filename diskname\" - delete a file\n");
-			printf("\t\"file_read filename diskname\" - read from a file\n");
-			printf("\t\"file_write filename diskname\" - write from a file\n");
+			printf("\t\"file_open diskname filename\" - open a exist file\n");
+			printf("\t\"file_close diskname filename\" - close a exist file\n");
+			printf("\t\"file_create diskname filename\" - create a file\n");
+			printf("\t\"file_delete diskname filename\" - delete a file\n");
+			printf("\t\"file_read diskname filename size(dec)\" - read from a file\n");
+			printf("\t\"file_write diskname filename size(dec)\" - write from a file\n");
 			printf("\t\"ls_true\" - to list current directory file (True workspace directory)\n");
 			printf("\t\"ls\" - to list current directory file (disk-like file directory)\n");
 			printf("\t\"list_file\" - to list all valid file handler\n");
@@ -182,7 +182,7 @@ int command_execute(char *cmd){
 				// do the operation
 				int i,filter;
 				filter = myfs_file_open(filename,diskname);
-				if(filter){
+				if(filter>0){
 					/* store in validFile */
 					for(i = 0; i < 128 ; i++){
 						if(validFile[i].file_id == -1){
@@ -309,17 +309,24 @@ int command_execute(char *cmd){
 			/* enter "file_read" */
 				// fetch file and current diskname 
 				char comd[64], diskname[64] , filename[64];
+				int size = -1;
 				if(cmd[10] != '\0'){
 				// read for the disk name and filename
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
-					sscanf(cmd,"%s %s %s",comd,diskname,filename);
+					sscanf(cmd,"%s %s %s %d",comd,diskname,filename,&size);
 					if(diskname[0] == '\0'){
 						printf("You don't have input the diskname!\n");
+						return -1;
 					}
 					else if(filename[0] == '\0'){
 						printf("You don't have input the filename!\n");
+						return -1;
+					}
+					else if(size == -1){
+						printf("You don't have input the size!\n");
+						return -1;
 					}
 					else{
 						printf("The file you want to read : %s , which is in disk : %s\n",filename,diskname);
@@ -327,11 +334,12 @@ int command_execute(char *cmd){
 				}
 				else{
 					printf("You have to input diskname and filename ! \nPlease use \"help\" to check it ! \n");	
+					return -1;
 				}
 				// do the  read operation
 				int i,fid,filter = 0;
 				char *buf;
-				int bufsize = 10;
+				int bufsize = size;
 				for(i=0;i<128;i++){
 					if(validFile[i].name == filename){
 						printf("Now you want to read is %s file\n",validFile[i].name);
@@ -340,7 +348,7 @@ int command_execute(char *cmd){
 						break;
 					}
 				}
-				if(filter){
+				if(filter == 1){
 					// TODO => do the reading bufsize from user (stdin)
 					myfs_file_read(fid,buf,bufsize);
 				}
@@ -353,19 +361,25 @@ int command_execute(char *cmd){
 			/* enter "file_write" */
 				// fetch file and current diskname 
 				char comd[64], diskname[64] , filename[64];
+				int size = -1;
 				if(cmd[11] != '\0'){
 				// read for the disk name and filename
 					memset(comd , '\0' , 64);
 					memset(diskname , '\0' , 64);
 					memset(filename , '\0' , 64);
-					sscanf(cmd,"%s %s %s",comd,diskname,filename);
+					sscanf(cmd,"%s %s %s %d",comd,diskname,filename,&size);
 					if(diskname[0] == '\0'){
 						printf("You don't have input the diskname!\n");
-						return 1;
+						return -1;
 					}
 					else if(filename[0] == '\0'){
 						printf("You don't have input the filename!\n");
-						return 1;
+						return -1;
+					}
+					else if(size == -1){
+						printf("You don't have input the size!\n");
+						return -1;
+						
 					}
 					else{
 						printf("The file you want to write : %s , which is in disk : %s\n",filename,diskname);
@@ -385,7 +399,7 @@ int command_execute(char *cmd){
 						break;
 					}
 				}
-				if(filter){
+				if(filter == 1){
 					// TODO : read from stdin (user) and then store the string to buffer
 					myfs_file_write(fid,buf,bufsize);
 				}
