@@ -287,6 +287,7 @@ int myfs_file_write(int fd , char *buf , int count){
 	char totalbuf[1024];
 	char writebuf[1024];
 	int bufindex = 0;
+	int bsize = 0;
 	memset(totalbuf,'\0',1024);
 	memset(writebuf,'\0',1024);
 	while(1){
@@ -311,16 +312,19 @@ int myfs_file_write(int fd , char *buf , int count){
 			// Backspace = 8
 			bufindex--;
 			writebuf[bufindex] = 0;
+			bsize--;
 		}	
 		else{
 			// write in buffer
 			writebuf[bufindex] = temp;
 			bufindex++;
-			if( bufindex >= count ){
+			bsize++;
+			if( bsize >= count ){
 			// Out of the input size
 				printf("Your input size has exceed the limited size! Stop \n");
 				printf("End of Input , prepare to store into \"%s\" file\n",filename);
-				strcat(totalbuf,writebuf);
+				strncat(totalbuf,writebuf,count);
+				//printf("The totalbuf is %s\n",totalbuf);
 				strcat(totalbuf,FILE_NL_STR); // For next line replace character => for read
 				// clear buf
 				memset(writebuf,'\0',1024);
@@ -329,8 +333,9 @@ int myfs_file_write(int fd , char *buf , int count){
 			}
 			
 		}
+		//printf("Bufindex is %d now ; and count is %d\n",bufindex,count);
 	}
-	//printf("Total buffer is %s\n" , totalbuf);
+	printf("Total buffer is %s ; count is %d\n" , totalbuf , count);
 	// Prepare to store in file
 	char linebuffer[512] = {0};
 	memset(linebuffer,'\0',512);
@@ -355,11 +360,15 @@ int myfs_file_write(int fd , char *buf , int count){
 		if(!strcmp(filename,buffer1)){
 			// compare is get
 			len -= strlen(linebuffer);
+			char tmp[512];
+			strcpy(tmp,buffer2);
+			sscanf(tmp,"%s",buffer2);
 			int buflen = strlen(buffer2);
 			// check whether it has the rest space
 			current_disk_size += buflen;
-			int writelen = strlen(totalbuf);
+			int writelen = bsize;//strlen(totalbuf);
 			current_disk_size -= writelen;
+			//printf("Buflen is %d ; writelen is %d ; current_disk_size is %d\n",buflen,writelen,current_disk_size);
 			if(current_disk_size < 0){
 				printf("There hasn't the extra space to store your file!\n");
 				break;

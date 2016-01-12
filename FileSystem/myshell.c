@@ -390,7 +390,7 @@ int command_execute(char *cmd){
 					return 1;
 				}
 				// do the  write operation
-				int i,fid,filter = 0,bufsize = 10;
+				int i,fid,filter = 0,bufsize = size;
 				char *buf;
 				for(i=0;i<128;i++){
 					if(validFile[i].name == filename){
