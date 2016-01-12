@@ -333,8 +333,11 @@ int myfs_file_write(int fd , char *buf , int count){
 	//printf("Total buffer is %s\n" , totalbuf);
 	// Prepare to store in file
 	char linebuffer[512] = {0};
+	memset(linebuffer,'\0',512);
 	char buffer1[512] = {0};
+	memset(buffer1,'\0',512);
 	char buffer2[512] = {0};
+	memset(buffer2,'\0',512);
 	int line_len = 0;
 	int len = 0;
 	int res;
@@ -417,11 +420,11 @@ int myfs_file_write(int fd , char *buf , int count){
 				perror("fseek error");
 				return -1;
 			}
-			if(current_disk_size < size){
+			/*if(current_disk_size < size){
 				for(i = 0 ; i < buflen ; i++){
 				strcat(size_int," ");
 				}
-			}
+			}*/
 			strcat(title,"==");
 			strcat(title,size_int);
 			printf("Store back is %s\n",title);

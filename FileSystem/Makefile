@@ -10,4 +10,4 @@ myshell.o:myshell.c myshell.h
 run:
 	./hw5 
 clean:
-	rm main.o myfile.o myshell.o hw5 myshell.c~ myshell.h~ myfile.c~ myfile.h~ main.c~ Makefile~
+	rm main.o myfile.o myshell.o hw5 myshell.c~ myshell.h~ myfile.c~ myfile.h~ main.c~ Makefile~ kevin~
